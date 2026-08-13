@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "DVWDesign canonical Renovate preset for PUBLIC repos \u2014 mirrors RootDispatcher/config/renovate-base.json (the private-repo source of truth). Consume via: \"extends\": [\"github>DESIGN-DVW/renovate-config\"]. Kept in sync by hand for now \u2014 see DISPATCH-094.",
+  "description": "DVWDesign canonical Renovate preset for PUBLIC repos \u2014 mirrors RootDispatcher/config/renovate-base.json (the private-repo source of truth). Consume via: \"extends\": [\"github>DESIGN-DVW/renovate-config\"]. Kept in sync by hand for now \u2014 see DISPATCH-094. NOTE: no day/time schedule \u2014 removed 2026-08-14, see the private preset for rationale.",
   "extends": [
     "config:recommended",
     ":dependencyDashboard",
@@ -8,9 +8,6 @@
     "helpers:pinGitHubActionDigests"
   ],
   "timezone": "Europe/Paris",
-  "schedule": [
-    "before 9am on Monday"
-  ],
   "labels": [
     "dependencies"
   ],
