@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "DVWDesign canonical Renovate preset for PUBLIC repos \u2014 mirrors RootDispatcher/config/renovate-base.json (the private-repo source of truth). Consume via: \"extends\": [\"github>DESIGN-DVW/renovate-config\"]. Kept in sync by hand for now \u2014 see DISPATCH-094. NOTE: no day/time schedule \u2014 removed 2026-08-14, see the private preset for rationale.",
+  "description": "DVWDesign canonical Renovate preset for PUBLIC repos — mirrors RootDispatcher/config/renovate-base.json (the private-repo source of truth). Consume via: \"extends\": [\"github>DESIGN-DVW/renovate-config\"]. Kept in sync by hand — see DISPATCH-094. CADENCE (2026-11-11): consumers run Wednesday, whole day, and take releases at least 7 days old; shared-packages runs every other day at 3 days, so it adopts first. Never narrow a window below a whole day (the 'before 9am on Monday' window starved queues for weeks). DELIBERATE DIFFERENCE from the private preset: NO automerge lane here yet. The private preset's v3.0 safe class needs a required CI check on the consumer's default branch (DISPATCH-140); this preset's consumer (DocuMind) has none, and GitHub auto-merge would merge untested. Port the safe-class rules here only once every consumer of this preset requires CI.",
   "extends": [
     "config:recommended",
     ":dependencyDashboard",
@@ -11,18 +11,21 @@
   "labels": [
     "dependencies"
   ],
+  "schedule": [
+    "* * * * 3"
+  ],
   "prConcurrentLimit": 10,
   "prHourlyLimit": 4,
   "packageRules": [
     {
-      "description": "Internal @design-dvw/* are private GitHub Packages governed by the shared-packages release + consumer-registry flow (shared-packages-first) \u2014 NOT by Renovate. Disabling avoids private-registry 'no-result' lookup failures (the Renovate bot has no read:packages auth). Security of these packages is managed at the shared-packages source; see DEPENDENCY-GOVERNANCE.md \u203a Internal packages.",
+      "description": "Internal @design-dvw/* are private GitHub Packages governed by the shared-packages release + consumer-registry flow (shared-packages-first) — NOT by Renovate. Disabling avoids private-registry 'no-result' lookup failures (the Renovate bot has no read:packages auth). Security of these packages is managed at the shared-packages source; see DEPENDENCY-GOVERNANCE.md › Internal packages.",
       "matchPackageNames": [
         "@design-dvw/{/,}**"
       ],
       "enabled": false
     },
     {
-      "description": "Group all Storybook packages so they move together in ONE PR (they must stay on the same version). Storybook version alignment follows shared-packages (Main) \u2014 see docs/ecosystem/DEPENDENCY-GOVERNANCE.md.",
+      "description": "Group all Storybook packages so they move together in ONE PR (they must stay on the same version). Storybook version alignment follows shared-packages (Main) — see docs/ecosystem/DEPENDENCY-GOVERNANCE.md.",
       "matchPackageNames": [
         "storybook",
         "@storybook/{/,}**",
@@ -32,7 +35,7 @@
       "groupSlug": "storybook"
     },
     {
-      "description": "NO AUTOMERGE, ANY update type. Policy: every dependency change lands through a reviewed PR \u2014 there is no unattended merge lane in this ecosystem (operator decision 2026-07-26; see DEPENDENCY-GOVERNANCE.md \u203a Merge policy and DECISION-RIGHTS.md). Staleness is handled by the PR-age watchdog that warns the operator, NOT by automerging. This rule is deliberately last so it overrides any automerge inherited from config:recommended.",
+      "description": "NO AUTOMERGE, ANY update type. Policy: every dependency change lands through a reviewed PR — there is no unattended merge lane in this ecosystem (operator decision 2026-07-26; see DEPENDENCY-GOVERNANCE.md › Merge policy and DECISION-RIGHTS.md). Staleness is handled by the PR-age watchdog that warns the operator, NOT by automerging. This rule is deliberately last so it overrides any automerge inherited from config:recommended.",
       "matchUpdateTypes": [
         "major",
         "minor",
@@ -60,5 +63,6 @@
   "vulnerabilityAlerts": {
     "enabled": false,
     "description": "Renovate does NOT open security PRs. Dependabot owns security updates (org-enforced via DESIGN-DVW-org-config-1); this avoids duplicate security PRs. Renovate handles routine version updates only. See docs/ecosystem/DEPENDENCY-GOVERNANCE.md."
-  }
+  },
+  "minimumReleaseAge": "7 days"
 }
