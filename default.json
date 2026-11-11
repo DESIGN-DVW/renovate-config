@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "DVWDesign canonical Renovate preset for PUBLIC repos — mirrors RootDispatcher/config/renovate-base.json (the private-repo source of truth). Consume via: \"extends\": [\"github>DESIGN-DVW/renovate-config\"]. Kept in sync by hand — see DISPATCH-094. CADENCE (2026-11-11): consumers run Wednesday, whole day, and take releases at least 7 days old; shared-packages runs every other day at 3 days, so it adopts first. Never narrow a window below a whole day (the 'before 9am on Monday' window starved queues for weeks). DELIBERATE DIFFERENCE from the private preset: NO automerge lane here yet. The private preset's v3.0 safe class needs a required CI check on the consumer's default branch (DISPATCH-140); this preset's consumer (DocuMind) has none, and GitHub auto-merge would merge untested. Port the safe-class rules here only once every consumer of this preset requires CI.",
+  "description": "DVWDesign canonical Renovate preset for PUBLIC repos — mirrors RootDispatcher/config/renovate-base.json (the private-repo source of truth), whose description carries the full rationale. Consume via: \"extends\": [\"github>DESIGN-DVW/renovate-config\"]. Kept in sync by hand — see DISPATCH-094; this file is now IDENTICAL to the private preset except for this description. MERGE POLICY v3.0: a narrow SAFE CLASS automerges via GitHub native auto-merge; everything else is a reviewed PR. PREREQUISITE: every consumer of this preset must require a CI check on its default branch (CiCheck ruleset, repo property ci-required=true) — DocuMind does since 2026-11-11. CADENCE: Wednesday whole day, 7-day release age; shared-packages runs every other day at 3 days and adopts first.",
   "extends": [
     "config:recommended",
     ":dependencyDashboard",
@@ -35,7 +35,7 @@
       "groupSlug": "storybook"
     },
     {
-      "description": "NO AUTOMERGE, ANY update type. Policy: every dependency change lands through a reviewed PR — there is no unattended merge lane in this ecosystem (operator decision 2026-07-26; see DEPENDENCY-GOVERNANCE.md › Merge policy and DECISION-RIGHTS.md). Staleness is handled by the PR-age watchdog that warns the operator, NOT by automerging. This rule is deliberately last so it overrides any automerge inherited from config:recommended.",
+      "description": "FLOOR: nothing automerges unless a later rule explicitly allows it. Ordered before the safe-class allowances so those win, and before the final never-automerge rule so that one wins over everything. Overrides any automerge inherited from config:recommended.",
       "matchUpdateTypes": [
         "major",
         "minor",
@@ -50,6 +50,37 @@
       "automerge": false
     },
     {
+      "description": "SAFE CLASS (class B, PR-classes brief 2026-11-09): devDependencies patch+minor automerge. Dev tooling cannot reach a production artifact, and the required CI check is the gate. Needs a required status check on the default branch (DISPATCH-140) or GitHub merges untested.",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "SAFE CLASS: @types/* non-major automerge. Type-only, compile-time; a break shows up as a failing typecheck in CI, not at runtime.",
+      "matchPackageNames": [
+        "@types/{/,}**"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "SAFE CLASS (class A, mechanical): lockfile maintenance, range pinning and GitHub Action digest re-pins. No declared version changes; pinning and digest re-pinning strictly reduce supply-chain surface (see helpers:pinGitHubActionDigests above).",
+      "matchUpdateTypes": [
+        "lockFileMaintenance",
+        "pin",
+        "digest"
+      ],
+      "automerge": true
+    },
+    {
       "description": "Major version bumps are additionally labelled so the watchdog and reviewers can triage them first (human-gated per DECISION-RIGHTS.md)",
       "matchUpdateTypes": [
         "major"
@@ -58,11 +89,32 @@
         "dependencies",
         "major-upgrade"
       ]
+    },
+    {
+      "description": "NEVER AUTOMERGE: production runtime dependencies, any update type. Explicit rather than implicit, so loosening a rule above cannot accidentally open this lane.",
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies",
+        "optionalDependencies"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "NEVER AUTOMERGE, whatever a rule above says — ordered last so it always wins. Majors, replacements and rollbacks are operator decisions (DECISION-RIGHTS.md). Production `dependencies` are not listed here because no rule above ever allows them: a runtime dependency of any update type stays human-gated.",
+      "matchUpdateTypes": [
+        "major",
+        "replacement",
+        "rollback"
+      ],
+      "automerge": false
     }
   ],
   "vulnerabilityAlerts": {
     "enabled": false,
     "description": "Renovate does NOT open security PRs. Dependabot owns security updates (org-enforced via DESIGN-DVW-org-config-1); this avoids duplicate security PRs. Renovate handles routine version updates only. See docs/ecosystem/DEPENDENCY-GOVERNANCE.md."
   },
+  "platformAutomerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
   "minimumReleaseAge": "7 days"
 }
